@@ -1,9 +1,9 @@
 // INCLUSÃO DE BIBLIOTECAS
 #include <Wire.h>
-#include <RTClib.h>
 #include <HX711.h>
 #include <FS.h>
 #include <SD.h>
+#include <LittleFS.h>
 #include <SPI.h>
 #include <Pushbutton.h>
 #include <BluetoothSerial.h>
@@ -37,9 +37,11 @@ float maxValues[2] = {0.0, 0.0};  // Vetor leituras de pico (peso, pressão)
 unsigned long previousMillis = 0; // Controle de tempo
 bool selectLoop = false;          // Modo de operação
 float loadFactor = 0.0;           // Valor encontrado na calibração
-String dir = "";                  // Diretório
 String filedir = "";              // Arquivo
 String leitura = "";              // Leitura dos dados
+
+enum StorageType { STORAGE_NONE, STORAGE_SD, STORAGE_LITTLEFS };
+StorageType storageType = STORAGE_NONE;
 
 // Estado do modo de configuração (calibração)
 static bool configMode = false;
@@ -47,7 +49,7 @@ static bool configMode = false;
 // Instanciação de objetos
 Pushbutton button(BTN_PIN);                                                                                                  // Botão
 PressureSensor pressureSensor(PRESSURE_PIN, R1, R2, RESOLUCAO_ADC, TENSAO_MAX_ADC, VminPressure, VmaxPressure, maxPressure); // Sensor de pressão
-RTC_DS3231 rtc;                                                                                                              // Relógio
+
 HX711 escala;                                                                                                                // Célula de carga
 BluetoothSerial SerialBT;                                                                                                    // Bluetooth
 Preferences preferences;                                                                                                     // Preferências salvas
@@ -67,7 +69,7 @@ void setup()
 
   pressureSensor.begin();
 
-  if (setupRTC() && setupSDCard() && setupHX711())
+  if (setupStorageAndFile() && setupHX711())
   {
     printToSerials("Sistema configurado. Transmitindo...");
     buzzSignal("Sucesso");
@@ -191,79 +193,96 @@ void buzzSignal(String signal)
   }
 }
 
-// Configuração do RTC
-bool setupRTC()
+
+String generateFileName()
 {
-  if (!rtc.begin())
+  const char* prefix = (storageType == STORAGE_SD) ? "Dados" : "dados";
+
+  for (int i = 1; i <= 999; i++)
   {
-    printToSerials("DS3231 não encontrado");
-    return false;
+    char candidate[32];
+    snprintf(candidate, sizeof(candidate), "/%s_%03d.txt", prefix, i);
+
+    bool exists = false;
+    if (storageType == STORAGE_SD) {
+      exists = SD.exists(candidate);
+    } else if (storageType == STORAGE_LITTLEFS) {
+      exists = LittleFS.exists(candidate);
+    }
+
+    if (!exists)
+      return String(candidate);
   }
-  if (rtc.lostPower())
-  {
-    printToSerials("DS3231 OK!");
-    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  }
-  return true;
+
+  return "/overflow.txt";
 }
 
-// Recebe a data e hora atual formatada como String
-String getCurrentDateTime()
+// Configuração do Storage (SD com LittleFS fallback)
+bool setupStorage()
 {
-  DateTime now = rtc.now();
-  String data = "";
-
-  data.concat(String(now.day(), DEC));
-  data.concat('-');
-  data.concat(String(now.month(), DEC));
-  data.concat('-');
-  data.concat(String(now.year(), DEC));
-  data.concat('_');
-  data.concat(String(now.hour(), DEC));
-  data.concat('-');
-  data.concat(String(now.minute(), DEC));
-  data.concat('-');
-  data.concat(String(now.second(), DEC));
-
-  return data;
-}
-
-// Configuração do cartão SD e Arquivo
-bool setupSDCard()
-{
-  if (!SD.begin(CS_PIN))
+  Serial.println("Inicializando SD...");
+  if (SD.begin(CS_PIN) && SD.cardType() != CARD_NONE)
   {
-    printToSerials("Falha no SD");
-    return false;
-  }
-  if (SD.cardType() == CARD_NONE)
-  {
-    printToSerials("Cartão SD não encontrado");
-    return false;
-  }
-
-  String now = getCurrentDateTime();
-  dir = "/" + now;
-  createDir(SD, dir);
-  filedir = dir + "/" + now + "_raw.txt";
-  if (writeFile(SD, filedir, "Tempo,Empuxo,Pressao\n")) // Criação do arquivo para armazenamento de dados
-  {
-    printToSerials("Arquivo criado com sucesso");
+    storageType = STORAGE_SD;
+    Serial.println("SD iniciado!");
+    Serial.printf("Tipo: %s\n",
+      SD.cardType() == CARD_MMC ? "MMC" :
+      SD.cardType() == CARD_SD ? "SDSC" :
+      SD.cardType() == CARD_SDHC ? "SDHC" : "UNKNOWN");
     return true;
   }
-  else
+
+  Serial.println("SD falhou. Tentando LittleFS...");
+  yield();
+
+  if (LittleFS.begin(true))
+  {
+    storageType = STORAGE_LITTLEFS;
+    Serial.println("LittleFS iniciado!");
+    Serial.printf("Total: %u bytes, Usado: %u bytes\n",
+      (unsigned)LittleFS.totalBytes(), (unsigned)LittleFS.usedBytes());
+    return true;
+  }
+
+  Serial.println("ERRO: Nenhum storage disponivel!");
+  yield();
+  return false;
+}
+
+// Configuração do Storage e Arquivo
+bool setupStorageAndFile()
+{
+  if (!setupStorage())
+  {
+    return false;
+  }
+
+  filedir = generateFileName();
+  Serial.print("Arquivo: ");
+  Serial.println(filedir);
+
+  if (!writeFile(filedir, "Tempo,Empuxo,Pressao\n"))
   {
     printToSerials("Falha ao criar arquivo");
     return false;
   }
+
+  printToSerials("Arquivo criado: " + filedir);
+  return true;
 }
 
 // Configuração da célula de carga HX711
 bool setupHX711()
 {
+  Serial.println("Iniciando HX711...");
   escala.begin(CELULA_DT_PIN, CELULA_SCK_PIN);
+  Serial.println("HX711.begin OK");
+
   escala.set_scale(loadFactor);
+  Serial.println("set_scale OK");
+
   escala.tare();
+  Serial.println("tare OK");
 
   printToSerials("HX711 conectado");
   return true;
@@ -289,13 +308,22 @@ void logData(unsigned long millis)
   leitura = String(millis) + "," + String(peso, 6) + "," + String(pressao);
 
   printToSerials(leitura);
-  appendFile(SD, filedir, leitura);
+  appendFile(filedir, leitura);
 }
 
 // Escrita de dados em um arquivo
-bool writeFile(fs::FS &fs, String path, String message)
+bool writeFile(const String &path, const String &message)
 {
-  File file = fs.open(path, FILE_WRITE);
+  File file;
+
+  if (storageType == STORAGE_SD) {
+    file = SD.open(path, FILE_WRITE);
+  } else if (storageType == STORAGE_LITTLEFS) {
+    file = LittleFS.open(path, FILE_WRITE);
+  } else {
+    return false;
+  }
+
   if (!file)
   {
     printToSerials("Falha ao abrir o arquivo");
@@ -307,8 +335,9 @@ bool writeFile(fs::FS &fs, String path, String message)
   }
   else
   {
-    printToSerials("Falha ao escrever no arquivo - w");
+    printToSerials("Falha ao escrever no arquivo");
     digitalWrite(LED_PIN, LOW);
+    file.close();
     return false;
   }
   file.close();
@@ -316,13 +345,22 @@ bool writeFile(fs::FS &fs, String path, String message)
 }
 
 // Anexação de dados em um arquivo
-void appendFile(fs::FS &fs, const String &path, const String &message)
+void appendFile(const String &path, const String &message)
 {
-  // Adição de dados em um arquivo
-  File file = fs.open(path, FILE_APPEND);
+  File file;
+
+  if (storageType == STORAGE_SD) {
+    file = SD.open(path, FILE_APPEND);
+  } else if (storageType == STORAGE_LITTLEFS) {
+    file = LittleFS.open(path, FILE_APPEND);
+  } else {
+    return;
+  }
+
   if (!file)
   {
     printToSerials("Falha ao abrir o arquivo");
+    return;
   }
   if (file.print(message + "\n"))
   {
@@ -330,7 +368,7 @@ void appendFile(fs::FS &fs, const String &path, const String &message)
   }
   else
   {
-    printToSerials("Falha ao escrever no arquivo - a");
+    printToSerials("Falha ao escrever no arquivo");
     digitalWrite(LED_PIN, LOW);
   }
   file.close();
