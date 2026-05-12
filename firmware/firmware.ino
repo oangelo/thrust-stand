@@ -1,16 +1,13 @@
 // INCLUSÃO DE BIBLIOTECAS
 #include <Wire.h>
-#include <RTClib.h>
 #include <HX711.h>
 #include <FS.h>
 #include <SD.h>
+#include <LittleFS.h>
 #include <SPI.h>
 #include <Pushbutton.h>
 #include <BluetoothSerial.h>
-#include <esp_now.h>
-#include <WiFi.h>
 #include <Preferences.h>
-#include <LiquidCrystal_I2C.h>
 
 #include "Pressure.h"
 
@@ -23,8 +20,9 @@
 #define CELULA_SCK_PIN 27 // Pino de clock da célula de carga
 #define PRESSURE_PIN 35   // Pino do sensor de pressão
 #define INTERVALO 100     // Precisão Leitura Dados milissegundos
-#define LCD_ROW 4 // Quantidade de linhas do LCD
-#define LCD_COL 20 // Quantidade de colunas do LCD 
+
+// Sensores analógicos no ESP32 podem variar com atenuação/referência.
+// Ajuste estes parâmetros ao seu hardware real para obter leituras coerentes.
 
 // Variáveis globais
 const float VinPressure = 5.0;    // Tensão que alimenta o sensor
@@ -35,36 +33,26 @@ const float R1 = 2200.0;          // Resistor conectado entre o sensor e o pino 
 const float R2 = 3300.0;          // Resistor conectado entre o pino do ESP32 e o GND
 const int RESOLUCAO_ADC = 4095;   // ESP32 tem ADC de 12 bits (2^12 - 1)
 const float TENSAO_MAX_ADC = 3.3; // Tensão de referência do ADC do ESP32
-float maxValues[2];               // Vetor leituras de pico (peso, pressão)
+float maxValues[2] = {0.0, 0.0};  // Vetor leituras de pico (peso, pressão)
 unsigned long previousMillis = 0; // Controle de tempo
 bool selectLoop = false;          // Modo de operação
 float loadFactor = 0.0;           // Valor encontrado na calibração
-String dir = "";                  // Diretório
 String filedir = "";              // Arquivo
 String leitura = "";              // Leitura dos dados
-bool espNowPeerReady = false;     // Estado do par ESP-NOW
 
-// Configuração esp-now
-uint8_t enderecoReceptor[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; // Endereço MAC do receptor
+enum StorageType { STORAGE_NONE, STORAGE_SD, STORAGE_LITTLEFS };
+StorageType storageType = STORAGE_NONE;
 
-// Estrutura dos dados a serem enviados. Deve ser a mesma no transmissor e no receptor.
-typedef struct struct_message
-{
-  char data[60]; // Array para armazenar a string de dados "Tempo,Empuxo"
-} struct_message;
-
-// Cria uma instância da estrutura e informações do par
-struct_message minhaMensagem;
-esp_now_peer_info_t peerInfo;
+// Estado do modo de configuração (calibração)
+static bool configMode = false;
 
 // Instanciação de objetos
 Pushbutton button(BTN_PIN);                                                                                                  // Botão
 PressureSensor pressureSensor(PRESSURE_PIN, R1, R2, RESOLUCAO_ADC, TENSAO_MAX_ADC, VminPressure, VmaxPressure, maxPressure); // Sensor de pressão
-RTC_DS3231 rtc;                                                                                                              // Relógio
+
 HX711 escala;                                                                                                                // Célula de carga
 BluetoothSerial SerialBT;                                                                                                    // Bluetooth
 Preferences preferences;                                                                                                     // Preferências salvas
-LiquidCrystal_I2C LCD = LiquidCrystal_I2C(0x27, 20, 4); // Tela LCD 20x4
 
 void setup()
 {
@@ -78,12 +66,10 @@ void setup()
   pinMode(LED_PIN, OUTPUT);
   pinMode(BUZZER_PIN, OUTPUT);
   pinMode(BTN_PIN, INPUT);
-  
-  setupInfoScreen();
 
-  // setupESPNow();
+  pressureSensor.begin();
 
-  if (setupRTC() && setupSDCard() && setupHX711())
+  if (setupStorageAndFile() && setupHX711())
   {
     printToSerials("Sistema configurado. Transmitindo...");
     buzzSignal("Sucesso");
@@ -99,7 +85,11 @@ void setup()
 
 void loop()
 {
-  staticTest();
+  if (!configMode)
+  {
+    staticTest();
+  }
+
   if (button.getSingleDebouncedPress())
   {
     buzzSignal("Beep");
@@ -111,59 +101,52 @@ void loop()
   {
     String command = Serial.readStringUntil('\n');
     command.trim(); // Remove espaços e quebras de linha
+
+    if (command.equalsIgnoreCase("TARE"))
+    {
+      buzzSignal("Beep");
+      printToSerials("Célula Zerada!");
+      escala.tare();
+      return;
+    }
+
     if (command.startsWith("INIT CONFIG"))
     {
       escala.tare();
-      bool configurado = false;
+      configMode = true;
+      Serial.println("Aguardando fator de carga...");
+      return;
+    }
 
-      while (!configurado)
+    if (configMode && command.startsWith("SET LOAD FACTOR"))
+    {
+      int lastSpaceIndex = command.lastIndexOf(' ');
+      if (lastSpaceIndex != -1)
       {
-        if (Serial.available())
+        String factorStr = command.substring(lastSpaceIndex + 1);
+        float factor = factorStr.toFloat();
+        if (!isnan(factor) && factor != 0.0)
         {
-          String loadCommand = Serial.readStringUntil('\n');
-          loadCommand.trim();
-
-          if (loadCommand.startsWith("SET LOAD FACTOR"))
-          {
-            int lastSpaceIndex = loadCommand.lastIndexOf(' ');
-            if (lastSpaceIndex != -1)
-            {
-              String factorStr = loadCommand.substring(lastSpaceIndex + 1);
-              float factor = factorStr.toFloat();
-              if (!isnan(factor))
-              {
-                setLoadFactor(factor);
-                configurado = true; // Sai do loop
-              }
-              else
-              {
-                printToSerials("Valor inválido. Tente novamente.");
-                buzzSignal("Alerta");
-              }
-            }
-          }
+          setLoadFactor(factor);
+          configMode = false;
+          Serial.println("Modo configuração finalizado");
         }
-        Serial.println(escala.get_value(1), 0);
-        delay(100);
+        else
+        {
+          printToSerials("Valor inválido. Tente novamente.");
+          buzzSignal("Alerta");
+        }
       }
+      return;
     }
   }
-}
 
-// Configuração da tela de informacoes que vão aparecer no lcd
-void setupInfoScreen() {
-  LCD.init();
-  LCD.backlight();
-  LCD.setCursor(0, 0);
-  LCD.clear(): 
-  LCD.setCursor(0, 0);
-  LCD.print("kgf: ");
-  LCD.setCursor(0, 1); // Linha 1, coluna 0
-  LCD.print("Max kgf: ");
-  LCD.setCursor(0 , 2);
-  LCD.print("MPa: ");
-  LCD.setCursor(0, 3);
-  LCD.print("Max MPa: ");
+  // Stream de calibração: RAW contínuo enquanto aguarda o fator
+  if (configMode)
+  {
+    Serial.println(escala.get_value(1));
+    delay(100);
+  }
 }
 
 // Configuração do fator de carga
@@ -174,47 +157,6 @@ void setLoadFactor(float factor)
   preferences.putFloat("loadFactor", loadFactor);
   printToSerials("Fator de carga atualizado: " + String(loadFactor, 2));
   buzzSignal("Sucesso");
-}
-
-// Função de callback ESP-NOW
-void OnDataSent(const wifi_tx_info_t *tx_info, esp_now_send_status_t status)
-{
-  Serial.print("\r\nStatus do pacote ESP-NOW: ");
-  if (status == ESP_NOW_SEND_SUCCESS)
-  {
-    Serial.println("Entrega com Sucesso");
-  }
-  else
-  {
-    Serial.println("Falha na Entrega");
-  }
-}
-
-// Função para inicializar o ESP-NOW
-void setupESPNow()
-{
-  WiFi.mode(WIFI_STA);
-  if (esp_now_init() != ESP_OK)
-  {
-    Serial.println("ERRO CRÍTICO: Falha ao inicializar o ESP-NOW.");
-    return; // Sai da função se a inicialização base falhar
-  }
-
-  esp_now_register_send_cb(OnDataSent);
-  memcpy(peerInfo.peer_addr, enderecoReceptor, 6);
-  peerInfo.channel = 0;
-  peerInfo.encrypt = false;
-
-  if (esp_now_add_peer(&peerInfo) != ESP_OK)
-  {
-    Serial.println("AVISO: Falha ao adicionar o par receptor. O ESP-NOW não transmitirá dados.");
-    espNowPeerReady = false;
-  }
-  else
-  {
-    Serial.println("ESP-NOW OK! Par receptor adicionado com sucesso.");
-    espNowPeerReady = true;
-  }
 }
 
 // Sinalização com o buzzer
@@ -251,79 +193,96 @@ void buzzSignal(String signal)
   }
 }
 
-// Configuração do RTC
-bool setupRTC()
+
+String generateFileName()
 {
-  if (!rtc.begin())
+  const char* prefix = (storageType == STORAGE_SD) ? "Dados" : "dados";
+
+  for (int i = 1; i <= 999; i++)
   {
-    printToSerials("DS3231 não encontrado");
-    return false;
+    char candidate[32];
+    snprintf(candidate, sizeof(candidate), "/%s_%03d.txt", prefix, i);
+
+    bool exists = false;
+    if (storageType == STORAGE_SD) {
+      exists = SD.exists(candidate);
+    } else if (storageType == STORAGE_LITTLEFS) {
+      exists = LittleFS.exists(candidate);
+    }
+
+    if (!exists)
+      return String(candidate);
   }
-  if (rtc.lostPower())
-  {
-    printToSerials("DS3231 OK!");
-    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  }
-  return true;
+
+  return "/overflow.txt";
 }
 
-// Recebe a data e hora atual formatada como String
-String getCurrentDateTime()
+// Configuração do Storage (SD com LittleFS fallback)
+bool setupStorage()
 {
-  DateTime now = rtc.now();
-  String data = "";
-
-  data.concat(String(now.day(), DEC));
-  data.concat('-');
-  data.concat(String(now.month(), DEC));
-  data.concat('-');
-  data.concat(String(now.year(), DEC));
-  data.concat('_');
-  data.concat(String(now.hour(), DEC));
-  data.concat('-');
-  data.concat(String(now.minute(), DEC));
-  data.concat('-');
-  data.concat(String(now.second(), DEC));
-
-  return data;
-}
-
-// Configuração do cartão SD e Arquivo
-bool setupSDCard()
-{
-  if (!SD.begin(CS_PIN))
+  Serial.println("Inicializando SD...");
+  if (SD.begin(CS_PIN) && SD.cardType() != CARD_NONE)
   {
-    printToSerials("Falha no SD");
-    return false;
-  }
-  if (SD.cardType() == CARD_NONE)
-  {
-    printToSerials("Cartão SD não encontrado");
-    return false;
-  }
-
-  String now = getCurrentDateTime();
-  dir = "/" + now;
-  createDir(SD, dir);
-  filedir = dir + "/" + now + "_raw.txt";
-  if (writeFile(SD, filedir, "Tempo,Empuxo")) // Criação do arquivo para armazenamento de dados
-  {
-    printToSerials("Arquivo criado com sucesso");
+    storageType = STORAGE_SD;
+    Serial.println("SD iniciado!");
+    Serial.printf("Tipo: %s\n",
+      SD.cardType() == CARD_MMC ? "MMC" :
+      SD.cardType() == CARD_SD ? "SDSC" :
+      SD.cardType() == CARD_SDHC ? "SDHC" : "UNKNOWN");
     return true;
   }
-  else
+
+  Serial.println("SD falhou. Tentando LittleFS...");
+  yield();
+
+  if (LittleFS.begin(true))
+  {
+    storageType = STORAGE_LITTLEFS;
+    Serial.println("LittleFS iniciado!");
+    Serial.printf("Total: %u bytes, Usado: %u bytes\n",
+      (unsigned)LittleFS.totalBytes(), (unsigned)LittleFS.usedBytes());
+    return true;
+  }
+
+  Serial.println("ERRO: Nenhum storage disponivel!");
+  yield();
+  return false;
+}
+
+// Configuração do Storage e Arquivo
+bool setupStorageAndFile()
+{
+  if (!setupStorage())
+  {
+    return false;
+  }
+
+  filedir = generateFileName();
+  Serial.print("Arquivo: ");
+  Serial.println(filedir);
+
+  if (!writeFile(filedir, "Tempo,Empuxo,Pressao\n"))
   {
     printToSerials("Falha ao criar arquivo");
     return false;
   }
+
+  printToSerials("Arquivo criado: " + filedir);
+  return true;
 }
 
 // Configuração da célula de carga HX711
 bool setupHX711()
 {
+  Serial.println("Iniciando HX711...");
   escala.begin(CELULA_DT_PIN, CELULA_SCK_PIN);
+  Serial.println("HX711.begin OK");
+
   escala.set_scale(loadFactor);
+  Serial.println("set_scale OK");
+
   escala.tare();
+  Serial.println("tare OK");
 
   printToSerials("HX711 conectado");
   return true;
@@ -335,33 +294,10 @@ void logData(unsigned long millis)
 {
   float peso = escala.get_units();
   float pressao = pressureSensor.readMPa();
-  // printa os valores de peso e pressão no LCD (ajuste posições para 16x4)
-  // Atual (linha 0) e Maior (linha 1) para peso
-  LCD.setCursor(12, 0);
-  LCD.print("      ");               // limpa espaço
-  LCD.setCursor(12, 0);
-  LCD.print(String(peso, 2));       // peso com 2 casas
-
-  LCD.setCursor(12, 1);
-  LCD.print("      ");
-  LCD.setCursor(12, 1);
-  LCD.print(String(maxValues[0], 2)); // maior peso atual
-
-  // Pressão Atual (linha 2) e Pressão Maior (linha 3)
-  LCD.setCursor(13, 2);
-  LCD.print("   ");
-  LCD.setCursor(13, 2);
-  LCD.print(String(pressao, 2));
-
-  LCD.setCursor(13, 3);
-  LCD.print("   ");
-  LCD.setCursor(13, 3);
-  LCD.print(String(maxValues[1], 2));
 
   if (peso > maxValues[0])
   {
     maxValues[0] = peso;
-
   }
 
   if (pressao > maxValues[1])
@@ -372,13 +308,22 @@ void logData(unsigned long millis)
   leitura = String(millis) + "," + String(peso, 6) + "," + String(pressao);
 
   printToSerials(leitura);
-  appendFile(SD, filedir, leitura);
+  appendFile(filedir, leitura);
 }
 
 // Escrita de dados em um arquivo
-bool writeFile(fs::FS &fs, String path, String message)
+bool writeFile(const String &path, const String &message)
 {
-  File file = fs.open(path, FILE_WRITE);
+  File file;
+
+  if (storageType == STORAGE_SD) {
+    file = SD.open(path, FILE_WRITE);
+  } else if (storageType == STORAGE_LITTLEFS) {
+    file = LittleFS.open(path, FILE_WRITE);
+  } else {
+    return false;
+  }
+
   if (!file)
   {
     printToSerials("Falha ao abrir o arquivo");
@@ -390,8 +335,9 @@ bool writeFile(fs::FS &fs, String path, String message)
   }
   else
   {
-    printToSerials("Falha ao escrever no arquivo - w");
+    printToSerials("Falha ao escrever no arquivo");
     digitalWrite(LED_PIN, LOW);
+    file.close();
     return false;
   }
   file.close();
@@ -399,13 +345,22 @@ bool writeFile(fs::FS &fs, String path, String message)
 }
 
 // Anexação de dados em um arquivo
-void appendFile(fs::FS &fs, const String &path, const String &message)
+void appendFile(const String &path, const String &message)
 {
-  // Adição de dados em um arquivo
-  File file = fs.open(path, FILE_APPEND);
+  File file;
+
+  if (storageType == STORAGE_SD) {
+    file = SD.open(path, FILE_APPEND);
+  } else if (storageType == STORAGE_LITTLEFS) {
+    file = LittleFS.open(path, FILE_APPEND);
+  } else {
+    return;
+  }
+
   if (!file)
   {
     printToSerials("Falha ao abrir o arquivo");
+    return;
   }
   if (file.print(message + "\n"))
   {
@@ -413,7 +368,7 @@ void appendFile(fs::FS &fs, const String &path, const String &message)
   }
   else
   {
-    printToSerials("Falha ao escrever no arquivo - a");
+    printToSerials("Falha ao escrever no arquivo");
     digitalWrite(LED_PIN, LOW);
   }
   file.close();
