@@ -72,11 +72,11 @@ Acompanha a evolução da estrutura física do sistema de teste estático ao lon
 
 ---
 
-## V3 — Tubo 1″ × 1/4″ (Aço)
+## V3 — Cantoneira 1″ × 1/4″ (Aço)
 
 ### Estrutura
 
-- Tubo quadrado de aço 1 polegada × 1/4 de polegada
+- Cantoneira de aço 1 polegada × 1/4 de polegada
 - Mesa deslizante com trilhos lineares:
   - Dois eixos lineares cromados
   - Carrinhos lineares (rolamentos lineares)
@@ -108,7 +108,7 @@ Mostra a base + estrutura deslizante completa. Design influenciado pelas iteraç
 
 | Aspecto          | V1                          | V2                         | V3                                |
 | ---------------- | --------------------------- | -------------------------- | --------------------------------- |
-| Material         | Alumínio V-slot 20×20mm     | Aço metalon 20×20mm        | Aço tubo 1″ × 1/4″               |
+| Material         | Alumínio V-slot 20×20mm     | Aço metalon 20×20mm        | Aço cantoneira 1″ × 1/4″         |
 | Geometria        | Retangular                  | Trapezoidal                | Retangular + mesa deslizante      |
 | Montagem         | Modular (parafusos T-nut)   | Soldada                    | Soldada + trilhos lineares        |
 | Células de carga | 1                           | 2 (Wheatstone)             | 1                                 |
@@ -123,4 +123,4 @@ Mostra a base + estrutura deslizante completa. Design influenciado pelas iteraç
 
 - **V1**: prototipagem rápida, explorou conceitos de guia linear e montagem modular, mas cara e frágil
 - **V2**: tentativa de industrialização com geometria trapezoidal para cargas assimétricas, mas soldagem inadequada resultou em desalinhamento
-- **V3**: evolução natural — combina robustez do aço tubular com precisão de trilhos lineares e carrinhos, voltando à configuração de célula de carga única
+- **V3**: evolução natural — combina robustez da cantoneira de aço com precisão de trilhos lineares e carrinhos, voltando à configuração de célula de carga única
