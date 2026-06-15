@@ -118,12 +118,14 @@ No linting or formatting tools are configured. If introducing them:
 ### Documentation
 
 - All docs are in Brazilian Portuguese (Markdown)
-- Technical docs live in `docs/` (API.md, FIRMWARE.md, HARDWARE.md, TROUBLESHOOTING.md)
+- Technical docs live in `docs/` (API.md, FIRMWARE.md, HARDWARE.md, TROUBLESHOOTING.md, EVOLUÇÃO_CAIXA.md)
 - Follow existing doc structure and emoji conventions when adding new docs
+- Hardware photos go in `docs/imagens/` with descriptive names: `caixa_v1_frontal_superior.jpg` (version + angle, no spaces)
 
 ## Repository Conventions
 
 - **Branching:** feature branches from main (`feature/AmazingFeature`)
+- **Remotes:** `origin` (oangelo/thrust-stand) + `upstream` (Serra-Rocketry/thrust-stand) — push to both when ready
 - **License:** GPL v3 — all contributions must be compatible
 - **No secrets:** never commit credentials, API keys, or `.env` files
 - **No binary artifacts:** avoid committing compiled firmware binaries or build outputs
@@ -141,6 +143,7 @@ No linting or formatting tools are configured. If introducing them:
 | `docs/API.md` | Serial/Bluetooth protocol documentation |
 | `docs/FIRMWARE.md` | Firmware architecture and commands |
 | `docs/HARDWARE.md` | Schematic, BOM, pinout |
+| `docs/EVOLUÇÃO_CAIXA.md` | Evolution of the physical test stand structure (3 versions) |
 
 ## Common Pitfalls
 
