@@ -33,6 +33,11 @@ Esta documentação reúne o necessário para montagem, calibração, operação
 - Problemas comuns e diagnóstico rápido
 - Procedimentos de correção
 
+### 6. [Evolução da Caixa](./EVOLUÇÃO_CAIXA.md)
+
+- Histórico das 3 versões da estrutura física
+- Comparativo de materiais e design
+
 ## 📊 Diagramas Técnicos
 
 Arquitetura do sistema:
