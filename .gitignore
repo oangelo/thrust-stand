@@ -38,3 +38,7 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# KiCad auto-backups e prefs locais
+*-backups/
+*.kicad_prl
