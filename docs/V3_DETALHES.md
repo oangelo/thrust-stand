@@ -14,17 +14,29 @@ Especificações completas da versão 3 da bancada de teste estático da Serra R
 | Pintura | Preto |
 | Geometria | Retangular + mesa deslizante |
 
-### Sistema de Guia Linear
+---
+
+## Sistema de Guia Linear
 
 | Componente | Especificação |
 |------------|---------------|
+| Mancal (suporte de eixo) | SK12 |
+| Pillow Block (rolamento linear) | SC12UU |
 | Eixo linear | ⌀12mm, comprimento 600mm |
-| Rolamento | SC12UU (Pillow Block) |
 | Tipo | Auto-alinhante (self-aligning) |
 | Material do mancal | Alumínio fundido |
 | Quantidade de eixos | 2 (paralelos, sem torção) |
 
-<img src="./imagens/v3_mancal_sc12uu.jpg" width="400" alt="Mancal SC12UU">
+<img src="./imagens/v3_sk12_mancal.jpg" width="400" alt="Mancal SK12">
+
+<img src="./imagens/v3_sk12_eixos.jpg" width="400" alt="Mancal SK12 com eixos lineares">
+
+<table>
+  <tr>
+    <td><img src="./imagens/v3_guia_linear_montado.jpg" width="300" alt="Guia linear montada"></td>
+    <td><img src="./imagens/v3_sc12uu_pillow_block.jpg" width="300" alt="Pillow Block SC12UU"></td>
+  </tr>
+</table>
 
 O sistema de guia linear permite que o carro da bancada mova-se axialmente, transmitindo o empuxo do motor para a célula de carga sem cargas laterais parasitas. Os dois eixos paralelos garantem ausência de torção.
 
@@ -69,6 +81,14 @@ O sistema de guia linear permite que o carro da bancada mova-se axialmente, tran
 | Verde | S+ (Sinal +) |
 | Branco | S− (Sinal −) |
 
+<img src="./imagens/v3_celula_carga.jpg" width="500" alt="Célula de carga SZ51X-500kg">
+
+Célula de carga tipo viga em S em aço inox, montada em configuração de cisalhamento entre dois suportes metálicos da estrutura pintada de preto.
+
+<img src="./imagens/v3_certificado_calibracao.jpg" width="500" alt="Certificado de calibração">
+
+Certificado do fabricante com especificações completas da SZ51X-500kg.
+
 ---
 
 ## Resolução Estimada
@@ -78,30 +98,3 @@ Com o HX711 (24 bits) ou ADS1232 na aquisição:
 - **Fundo de escala:** 4,9 kN (500 kgf)
 - **Resolução estimada:** ~0,5 N
 - **Cobertura:** Motores experimentais de médio porte (Dédalo, Thonyan)
-
----
-
-## Fotos
-
-### Célula de carga montada
-
-<img src="./imagens/v3_celula_carga.jpg" width="500" alt="Célula de carga SZ51X-500kg">
-
-Célula de carga tipo viga em S em aço inox, montada em configuração de cisalhamento entre dois suportes metálicos da estrutura pintada de preto.
-
-### Certificado de calibração
-
-<img src="./imagens/v3_certificado_calibracao.jpg" width="500" alt="Certificado de calibração">
-
-Certificado do fabricante com especificações completas da SZ51X-500kg.
-
-### Sistema de guia linear
-
-<table>
-  <tr>
-    <td><img src="./imagens/v3_guia_linear_montado.jpg" width="300" alt="Guia linear montada"></td>
-    <td><img src="./imagens/v3_rolamento_sc12uu.jpg" width="300" alt="Guia linear solta"></td>
-  </tr>
-</table>
-
-Guia linear com eixo cromado de 12mm. À esquerda, montada na estrutura; à direita, guia solta para visualização do componente.
