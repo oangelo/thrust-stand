@@ -118,9 +118,11 @@ No linting or formatting tools are configured. If introducing them:
 ### Documentation
 
 - All docs are in Brazilian Portuguese (Markdown)
-- Technical docs live in `docs/` (API.md, FIRMWARE.md, HARDWARE.md, TROUBLESHOOTING.md, EVOLUÇÃO_CAIXA.md)
+- Technical docs live in `docs/` (API.md, FIRMWARE.md, HARDWARE.md, TROUBLESHOOTING.md, EVOLUÇÃO_CAIXA.md, V3_DETALHES.md)
 - Follow existing doc structure and emoji conventions when adding new docs
 - Hardware photos go in `docs/imagens/` with descriptive names: `caixa_v1_frontal_superior.jpg` (version + angle, no spaces)
+- Compress images before committing: `convert input.jpg -resize 1200x -quality 80 -strip output.jpg`
+- Use HTML tables for side-by-side images (3 per row, 300px width), isolated images at 500px
 
 ## Repository Conventions
 
@@ -144,6 +146,7 @@ No linting or formatting tools are configured. If introducing them:
 | `docs/FIRMWARE.md` | Firmware architecture and commands |
 | `docs/HARDWARE.md` | Schematic, BOM, pinout |
 | `docs/EVOLUÇÃO_CAIXA.md` | Evolution of the physical test stand structure (3 versions) |
+| `docs/V3_DETALHES.md` | V3 test stand detailed specs (load cell, linear guide, resolution) |
 
 ## Common Pitfalls
 
