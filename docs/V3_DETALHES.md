@@ -27,9 +27,12 @@ Especificações completas da versão 3 da bancada de teste estático da Serra R
 | Material do mancal | Alumínio fundido |
 | Quantidade de eixos | 2 (paralelos, sem torção) |
 
-<img src="./imagens/v3_sk12_mancal.jpg" width="400" alt="Mancal SK12">
-
-<img src="./imagens/v3_sk12_eixos.jpg" width="400" alt="Mancal SK12 com eixos lineares">
+<table>
+  <tr>
+    <td><img src="./imagens/v3_sk12_mancal.jpg" width="300" alt="Mancal SK12"></td>
+    <td><img src="./imagens/v3_sk12_eixos.jpg" width="300" alt="Mancal SK12 com eixos lineares"></td>
+  </tr>
+</table>
 
 <table>
   <tr>
