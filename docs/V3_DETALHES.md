@@ -26,6 +26,7 @@ Especificações completas da versão 3 da bancada de teste estático da Serra R
 | Tipo | Auto-alinhante (self-aligning) |
 | Material do mancal | Alumínio fundido |
 | Quantidade de eixos | 2 (paralelos, sem torção) |
+| Fixação do Pillow Block | 16× parafusos M5×12mm |
 
 <table>
   <tr>
