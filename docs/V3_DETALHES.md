@@ -24,6 +24,8 @@ Especificações completas da versão 3 da bancada de teste estático da Serra R
 | Material do mancal | Alumínio fundido |
 | Quantidade de eixos | 2 (paralelos, sem torção) |
 
+<img src="./imagens/v3_mancal_sc12uu.jpg" width="400" alt="Mancal SC12UU">
+
 O sistema de guia linear permite que o carro da bancada mova-se axialmente, transmitindo o empuxo do motor para a célula de carga sem cargas laterais parasitas. Os dois eixos paralelos garantem ausência de torção.
 
 ---
@@ -97,9 +99,9 @@ Certificado do fabricante com especificações completas da SZ51X-500kg.
 
 <table>
   <tr>
-    <td><img src="./imagens/v3_guia_linear_montado.jpg" width="300" alt="Guia linear montado"></td>
-    <td><img src="./imagens/v3_rolamento_sc12uu.jpg" width="300" alt="Rolamento SC12UU"></td>
+    <td><img src="./imagens/v3_guia_linear_montado.jpg" width="300" alt="Guia linear montada"></td>
+    <td><img src="./imagens/v3_rolamento_sc12uu.jpg" width="300" alt="Guia linear solta"></td>
   </tr>
 </table>
 
-Mancal SC12UU auto-alinhante em alumínio fundido, montado sobre eixo cromado de 12mm. O carrinho deslizante permite movimento axial, transmitindo empuxo sem cargas laterais.
+Guia linear com eixo cromado de 12mm. À esquerda, montada na estrutura; à direita, guia solta para visualização do componente.
