@@ -33,11 +33,13 @@ Acompanha a evolução da estrutura física do sistema de teste estático ao lon
 
 ### Fotos
 
-![V1 frontal superior](./imagens/caixa_v1_frontal_superior.jpg)
-
-![V1 lateral superior](./imagens/caixa_v1_lateral_superior.jpg)
-
-![V1 com rolamentos](./imagens/caixa_v1_rolamentos_lateral.jpeg)
+<table>
+  <tr>
+    <td><img src="./imagens/caixa_v1_frontal_superior.jpg" width="300" alt="V1 frontal superior"></td>
+    <td><img src="./imagens/caixa_v1_lateral_superior.jpg" width="300" alt="V1 lateral superior"></td>
+    <td><img src="./imagens/caixa_v1_rolamentos_lateral.jpeg" width="300" alt="V1 com rolamentos"></td>
+  </tr>
+</table>
 
 ---
 
@@ -66,9 +68,12 @@ Acompanha a evolução da estrutura física do sistema de teste estático ao lon
 
 ### Fotos
 
-![V2 lateral superior](./imagens/caixa_v2_lateral_superior.jpg)
-
-![V2 sensores](./imagens/mesa_v2_sensores.jpg)
+<table>
+  <tr>
+    <td><img src="./imagens/caixa_v2_lateral_superior.jpg" width="300" alt="V2 lateral superior"></td>
+    <td><img src="./imagens/mesa_v2_sensores.jpg" width="300" alt="V2 sensores"></td>
+  </tr>
+</table>
 
 ---
 
@@ -98,11 +103,11 @@ Acompanha a evolução da estrutura física do sistema de teste estático ao lon
 
 Mostra a base + estrutura deslizante completa. Design influenciado pelas iterações anteriores.
 
+<img src="./imagens/caixa_v3_render_isometrica.jpeg" width="500" alt="V3 render isométrico">
+
 ### Fotos
 
-![V3 superior](./imagens/caixa_v3_superior.jpg)
-
-![V3 render isométrico](./imagens/caixa_v3_render_isometrica.jpeg)
+<img src="./imagens/caixa_v3_superior.jpg" width="500" alt="V3 superior">
 
 ---
 

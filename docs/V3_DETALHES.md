@@ -83,24 +83,23 @@ Com o HX711 (24 bits) ou ADS1232 na aquisição:
 
 ### Célula de carga montada
 
-![Célula de carga SZ51X-500kg](./imagens/v3_celula_carga.jpg)
+<img src="./imagens/v3_celula_carga.jpg" width="500" alt="Célula de carga SZ51X-500kg">
 
 Célula de carga tipo viga em S em aço inox, montada em configuração de cisalhamento entre dois suportes metálicos da estrutura pintada de preto.
 
 ### Certificado de calibração
 
-![Certificado de calibração](./imagens/v3_certificado_calibracao.jpg)
+<img src="./imagens/v3_certificado_calibracao.jpg" width="500" alt="Certificado de calibração">
 
 Certificado do fabricante com especificações completas da SZ51X-500kg.
 
-### Sistema de guia linear — montado
+### Sistema de guia linear
 
-![Guia linear montado](./imagens/v3_guia_linear_montado.jpg)
+<table>
+  <tr>
+    <td><img src="./imagens/v3_guia_linear_montado.jpg" width="300" alt="Guia linear montado"></td>
+    <td><img src="./imagens/v3_rolamento_sc12uu.jpg" width="300" alt="Rolamento SC12UU"></td>
+  </tr>
+</table>
 
 Mancal SC12UU auto-alinhante em alumínio fundido, montado sobre eixo cromado de 12mm. O carrinho deslizante permite movimento axial, transmitindo empuxo sem cargas laterais.
-
-### Rolamento SC12UU
-
-![Rolamento SC12UU](./imagens/v3_rolamento_sc12uu.jpg)
-
-Rolamento linear Pillow Block SC12UU isolado.
