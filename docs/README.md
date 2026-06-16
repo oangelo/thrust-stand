@@ -38,6 +38,11 @@ Esta documentação reúne o necessário para montagem, calibração, operação
 - Histórico das 3 versões da estrutura física
 - Comparativo de materiais e design
 
+### 7. [V3 Detalhes](./V3_DETALHES.md)
+
+- Especificações da bancada v3
+- Célula de carga, guia linear, resolução
+
 ## 📊 Diagramas Técnicos
 
 Arquitetura do sistema:

@@ -74,6 +74,8 @@ Acompanha a evolução da estrutura física do sistema de teste estático ao lon
 
 ## V3 — Cantoneira 1″ × 1/4″ (Aço)
 
+> Para especificações completas da V3, ver [V3_DETALHES.md](./V3_DETALHES.md).
+
 ### Estrutura
 
 - Cantoneira de aço 1 polegada × 1/4 de polegada
