@@ -14,6 +14,10 @@ Especificações completas da versão 3 da bancada de teste estático da Serra R
 | Pintura | Preto |
 | Geometria | Retangular + mesa deslizante |
 
+### Modelo CAD
+
+[Baixar modelo STEP](../hardware/teste_estatico/step/caixa_v3.step)
+
 ---
 
 ## Sistema de Guia Linear
