@@ -41,6 +41,10 @@ Acompanha a evolução da estrutura física do sistema de teste estático ao lon
   </tr>
 </table>
 
+### Vídeo
+
+[Teste estático V1 — alumínio](./videos/caixa_v1_teste_estatico.mp4)
+
 ---
 
 ## V2 — Metalon 20×20mm (Aço)
@@ -74,6 +78,10 @@ Acompanha a evolução da estrutura física do sistema de teste estático ao lon
     <td><img src="./imagens/mesa_v2_sensores.jpg" width="300" alt="V2 sensores"></td>
   </tr>
 </table>
+
+### Vídeo
+
+[Teste estático V2 — metalon](./videos/caixa_v2_teste_estatico.mp4)
 
 ---
 
