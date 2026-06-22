@@ -125,7 +125,7 @@ No linting or formatting tools are configured. If introducing them:
 - Use HTML tables for side-by-side images (3 per row, 300px width), isolated images at 500px
 - Videos go in `docs/videos/` with descriptive names: `caixa_v1_teste_estatico.mp4` (version + type, no spaces)
 - Use Git LFS for video files (`git lfs track "*.mp4"`)
-- Reference videos in docs with Markdown links: `[Descrição](./videos/arquivo.mp4)` — GitHub renders native video player
+- Reference videos in docs with HTML `<video>` tag: `<video src="./videos/arquivo.mp4" controls width="500">Descrição</video>` — GitHub renders native video player
 
 ## Repository Conventions
 
