@@ -43,7 +43,9 @@ Acompanha a evolução da estrutura física do sistema de teste estático ao lon
 
 ### Vídeo
 
-<video src="./videos/caixa_v1_teste_estatico.mp4" controls width="500">Teste estático V1 — alumínio</video>
+![Teste estático V1 — alumínio](./imagens/caixa_v1_teste_estatico.avif)
+
+[Versão com áudio (MP4)](./videos/caixa_v1_teste_estatico.mp4)
 
 ---
 
@@ -81,7 +83,9 @@ Acompanha a evolução da estrutura física do sistema de teste estático ao lon
 
 ### Vídeo
 
-<video src="./videos/caixa_v2_teste_estatico.mp4" controls width="500">Teste estático V2 — metalon</video>
+![Teste estático V2 — metalon](./imagens/caixa_v2_teste_estatico.avif)
+
+[Versão com áudio (MP4)](./videos/caixa_v2_teste_estatico.mp4)
 
 ---
 
