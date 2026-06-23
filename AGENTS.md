@@ -153,6 +153,12 @@ No linting or formatting tools are configured. If introducing them:
 | `docs/EVOLUÇÃO_CAIXA.md` | Evolution of the physical test stand structure (3 versions) |
 | `docs/V3_DETALHES.md` | V3 test stand detailed specs (load cell, linear guide, resolution) |
 
+## Data Storage Conventions
+
+- **Static test data:** motor-specific test data (thrust curves, pressure logs) belongs in [Serra-Rocketry/motor](https://github.com/Serra-Rocketry/motor), not in this repo.
+- **This repo:** contains only the acquisition system (firmware, hardware, calibration tools).
+- **Calibration data:** `software/config-load-cell/Dados-Teste-Estatico/` is for calibration reference data only, not full test logs.
+
 ## Common Pitfalls
 
 - The `ui_fator_de_calibracao.py` file is auto-generated from `fator_de_calibracao.ui` — edit the `.ui` file in Qt Designer instead.
